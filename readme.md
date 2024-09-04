@@ -10,7 +10,7 @@ This is a simple Node.js-based CRUD (Create, Read, Update, Delete) API for manag
 ## Installation
 
 1. Clone the repository or download the source code.
-    (git clone https://github.com/Ivar246/Internship-Task-2)
+    git clone https://github.com/Ivar246/Internship-Task-2
 2. Navigate to the project directory.
 3. Install the required dependencies using npm:
 
@@ -18,7 +18,7 @@ This is a simple Node.js-based CRUD (Create, Read, Update, Delete) API for manag
    npm install
 
 ### API End Points
-    ```
+
         GET /api/todo/todos
 
         GET /api/todo?id=faldjflalkdfja
