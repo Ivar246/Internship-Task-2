@@ -20,10 +20,12 @@ server.on("request", async (req, res) => {
 
 
     // get todo by id
-    if (parsedUrl.pathname === "/api/todo") {
+    if (parsedUrl.pathname === "/api/todo" && method === "GET") {
         // extract id
         const id = parsedUrl.query.split("=")[1]
+
         try {
+
             // readfile 
             const jsonData = JSON.parse(await fs.readFile(jsonPath, "utf-8"))
 
@@ -41,13 +43,14 @@ server.on("request", async (req, res) => {
             res.writeHead(400, "couldn't get todo")
             res.end()
         }
-
     }
+
 
     // create todo
     if (parsedUrl.pathname === "/api/todo/create" && method === "POST") {
         let body = []
 
+        // receiving data from req
         req.on("data", (chunk) => {
             console.log(typeof chunk)
             body.push(chunk)
@@ -55,6 +58,7 @@ server.on("request", async (req, res) => {
 
         req.on("end", async () => {
             try {
+
                 const parsedBody = JSON.parse(Buffer.concat(body).toString())
 
                 const uniqueId = crypto.randomUUID()
@@ -70,6 +74,7 @@ server.on("request", async (req, res) => {
                 // send response
                 res.writeHead(200, "Todo added successfully");
                 res.end(JSON.stringify(parsedBody))
+
             }
             catch (error) {
                 res.writeHead(500, "failed to create todo")
@@ -81,13 +86,21 @@ server.on("request", async (req, res) => {
 
     // get all todos
     if (reqUrl === "/api/todo/todos" && method === "GET") {
-        console.log(path.resolve(__dirname, "todos.json"))
         // read from file
-        const todos = await fs.readFile(jsonPath, "utf-8")
-        res.end(todos)
+        try {
+            const todos = await fs.readFile(jsonPath, "utf-8")
+
+            res.writeHead(200, "Fetch successfull")
+            res.end(todos)
+        }
+        catch (error) {
+            res.writeHead(400, "Failed")
+            res.end(JSON.stringify("Couldn't fetch todo"))
+        }
     }
 
-    // update todos
+
+    // update todo
     if (parsedUrl.pathname === "/api/todo/update" && method === "PUT") {
         //extract id 
         const id = parsedUrl.query.split("=")[1]
@@ -100,26 +113,31 @@ server.on("request", async (req, res) => {
         })
 
         req.on("end", async () => {
+            try {
+                // parse req body
+                const parsedBody = JSON.parse(Buffer.concat(body).toString())
 
-            // parse req body
-            const parsedBody = JSON.parse(Buffer.concat(body).toString())
+                // readfile
+                const jsonData = JSON.parse(await fs.readFile(jsonPath, "utf-8"));
 
-            // readfile
-            const jsonData = JSON.parse(await fs.readFile(jsonPath, "utf-8"));
+                // find and update todo 
+                const todo = jsonData.find(todo => todo.id = id)
+                if (todo) {
+                    Object.assign(todo, parsedBody)
+                }
+                // write back to file
+                await fs.writeFile(jsonPath, JSON.stringify(jsonData));
 
-            // find and update todo 
-            const todo = jsonData.find(todo => todo.id = id)
-            if (todo) {
-                Object.assign(todo, parsedBody)
+                res.writeHead(200, `todo with id ${id} updated successfylly`)
+                res.end(JSON.stringify(todo))
+            } catch (error) {
+                res.writeHead(400, "Failed to update todo")
+                res.end(JSON.stringify(`todo with ${id} failed to update`))
             }
-            // write back to file
-            await fs.writeFile(jsonPath, JSON.stringify(jsonData));
-
-            res.writeHead(200, `todo with id ${id} updated successfylly`)
-            res.end(JSON.stringify(todo))
 
         })
     }
+
 
     // delete todo by id
     if (parsedUrl.pathname === "/api/todo/delete" && method === "DELETE") {
@@ -147,11 +165,10 @@ server.on("request", async (req, res) => {
 
         } catch (error) {
             res.writeHead(400, "Failed to delete todo")
-            res.end()
+            res.end(`todo with ${id} failed to delete`)
         }
     }
 })
-
 
 
 server.listen(3000, () => {
