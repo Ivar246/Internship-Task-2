@@ -147,7 +147,7 @@ server.on("request", async (req, res) => {
     }
 
 
-    // delete todo by id
+    // delete todo by id route
     if (parsedUrl.pathname === "/api/todo/delete" && method === "DELETE") {
         //extract id
         const id = parsedUrl.query.split("=")[1]
