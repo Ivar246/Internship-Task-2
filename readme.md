@@ -18,7 +18,7 @@ This is a simple Node.js-based CRUD (Create, Read, Update, Delete) API for manag
    npm install
 
 ### API End Points
-    ```bash
+    ```
         GET /api/todo/todos
 
         GET /api/todo?id=faldjflalkdfja
