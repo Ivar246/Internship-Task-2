@@ -19,7 +19,7 @@ server.on("request", async (req, res) => {
     const parsedUrl = url.parse(req.url)
 
 
-    // get todo by id
+    // get todo by id route
     if (parsedUrl.pathname === "/api/todo" && method === "GET") {
         // extract id
         const id = parsedUrl.query.split("=")[1]
@@ -35,6 +35,8 @@ server.on("request", async (req, res) => {
                 res.writeHead(400, `todo with ${id} doesn't exist`);
                 res.end()
             }
+
+            // response
             res.writeHead(200, "Todo found successfull")
             res.end(JSON.stringify(jsonData[todoIndex]))
 
@@ -46,7 +48,7 @@ server.on("request", async (req, res) => {
     }
 
 
-    // create todo
+    // create todo route
     if (parsedUrl.pathname === "/api/todo/create" && method === "POST") {
         let body = []
 
@@ -71,7 +73,7 @@ server.on("request", async (req, res) => {
                 parsedTodoList.push(parsedBody)
                 await fs.writeFile(jsonPath, JSON.stringify(parsedTodoList))
 
-                // send response
+                // response
                 res.writeHead(200, "Todo added successfully");
                 res.end(JSON.stringify(parsedBody))
 
@@ -84,14 +86,17 @@ server.on("request", async (req, res) => {
     }
 
 
-    // get all todos
+    // get all todos route
     if (reqUrl === "/api/todo/todos" && method === "GET") {
-        // read from file
         try {
+
+            // read from file
             const todos = await fs.readFile(jsonPath, "utf-8")
 
+            // response
             res.writeHead(200, "Fetch successfull")
             res.end(todos)
+
         }
         catch (error) {
             res.writeHead(400, "Failed")
@@ -100,7 +105,7 @@ server.on("request", async (req, res) => {
     }
 
 
-    // update todo
+    // update todo route
     if (parsedUrl.pathname === "/api/todo/update" && method === "PUT") {
         //extract id 
         const id = parsedUrl.query.split("=")[1]
@@ -114,6 +119,7 @@ server.on("request", async (req, res) => {
 
         req.on("end", async () => {
             try {
+
                 // parse req body
                 const parsedBody = JSON.parse(Buffer.concat(body).toString())
 
@@ -128,8 +134,10 @@ server.on("request", async (req, res) => {
                 // write back to file
                 await fs.writeFile(jsonPath, JSON.stringify(jsonData));
 
+                // response
                 res.writeHead(200, `todo with id ${id} updated successfylly`)
                 res.end(JSON.stringify(todo))
+
             } catch (error) {
                 res.writeHead(400, "Failed to update todo")
                 res.end(JSON.stringify(`todo with ${id} failed to update`))
@@ -149,12 +157,13 @@ server.on("request", async (req, res) => {
             // readfile 
             const jsonData = JSON.parse(await fs.readFile(jsonPath, "utf-8"))
 
-            // check if data exist 
+            // check if todo exist 
             const todoIndex = jsonData.findIndex(todo => todo.id === id)
             if (todoIndex === -1) {
                 res.writeHead(400, `todo with ${id} doesn't exist`);
                 res.end()
             }
+
             // filter and save = delete
             const filteredTodos = jsonData.filter(todo => todo.id !== id)
             await fs.writeFile(jsonPath, JSON.stringify(filteredTodos))
